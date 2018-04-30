@@ -25,12 +25,17 @@ const controlSearch = async () => {
         searchView.clearResults();
         renderLoader(elements.searchRes);
 
-        // Await for recipes on new Search object
-        await state.search.getResults();
+        try {
+            // Await for recipes on new Search object
+            await state.search.getResults();
 
-        // Render results on UI after we get it from API
-        clearLoader();
-        searchView.renderResults(state.search.result);
+            // Render results on UI after we get it from API
+            clearLoader();
+            searchView.renderResults(state.search.result);
+        } catch(err) {
+            alert('Something went wrong with the search.');
+            clearLoader();
+        }
     }
 }
 
@@ -50,9 +55,35 @@ elements.searchResPages.addEventListener('click', e => {
 });
 
 // RECIPE CONTROLLER
-const r = new Recipe();
-r.getRecipe();
+const controlRecipe = async () => {
+    // Get ID from URL hash
+    const id = window.location.hash.replace('#', '');
+    console.log(id);
 
+    if (id) {
+        // Prepare UI for changes
 
+        // Create new recipe object
+        state.recipe = new Recipe(id);
+
+        try {
+            // Get recipe data in background
+            await state.recipe.getRecipe();
+
+            // Calculate servings and time
+            state.recipe.calcTime();
+            state.recipe.calcServings();
+
+            // Render recipe
+            console.log(state.recipe);
+        } catch(error) {
+            alert('Error processing recipe');
+        }
+    }
+};
+
+// window.addEventListener('hashchange', controlRecipe);
+// window.addEventListener('load', controlRecipe);
+['hashchange', 'load'].forEach(event => window.addEventListener(event, controlRecipe));
 
 // http://food2fork.com/api/search
